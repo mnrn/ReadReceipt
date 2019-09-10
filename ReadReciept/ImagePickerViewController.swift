@@ -66,11 +66,11 @@ extension ViewController {
                 let responses: JSON = json["responses"][0]
 
                 // Get label annotations
-                let textAnnotations: JSON = responses["labelAnnotations"]
+                let textAnnotations: JSON = responses["textAnnotations"]
                 let numTexts: Int = textAnnotations.count
                 var texts: [String] = []
                 if numTexts > 0 {
-                    var textResultsText: String = "Labels found: "
+                    var textResultsText: String = "Texts found: "
                     for index in 0..<numTexts {
                         let text = textAnnotations[index]["description"].stringValue
                         texts.append(text)
@@ -84,8 +84,9 @@ extension ViewController {
                         }
                     }
                     self.textResults.text = textResultsText
+                    print(textResultsText)
                 } else {
-                    self.textResults.text = "No labels found"
+                    self.textResults.text = "No texts found"
                 }
             } catch let error {
                 self.textResults.text = "Error \(error)"
