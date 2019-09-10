@@ -16,7 +16,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var spinner: UIActivityIndicatorView!
     @IBOutlet weak var textResults: UITextView!
-    @IBOutlet weak var faceResults: UITextView!
 
     var googleURL: URL {
         let env = ProcessInfo.processInfo.environment
@@ -36,7 +35,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         // Do any additional setup after loading the view, typically from a nib.
         imagePicker.delegate = self
         textResults.isHidden = true
-        faceResults.isHidden = true
         spinner.hidesWhenStopped = true
     }
 
@@ -58,8 +56,6 @@ extension ViewController {
             self.spinner.stopAnimating()
             self.imageView.isHidden = true
             self.textResults.isHidden = false
-            self.faceResults.isHidden = false
-            self.faceResults.text = ""
 
             // Check for errors
             do {
@@ -104,7 +100,6 @@ extension ViewController {
             imageView.contentMode = .scaleAspectFit
             imageView.isHidden = true // You could optionally display the image here by setting imageView.image = pickedImage
             spinner.startAnimating()
-            faceResults.isHidden = true
             textResults.isHidden = true
 
             // Base64 encode the image and create the request
