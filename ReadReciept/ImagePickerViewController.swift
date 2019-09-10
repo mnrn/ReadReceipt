@@ -164,10 +164,12 @@ extension ViewController {
         // Run the request on a background thread
         DispatchQueue.global().async {
             Alamofire.request(self.googleURL, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers).responseJSON { response in
-                guard let data = response.data else {
-                    return
+                switch response.result {
+                case .success:
+                    self.analyzeResults(response.data!)
+                case let .failure(error):
+                    print(error)
                 }
-                self.analyzeResults(data)
             }
         }
     }
