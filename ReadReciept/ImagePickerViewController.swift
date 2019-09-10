@@ -84,7 +84,6 @@ extension ViewController {
                         }
                     }
                     self.textResults.text = textResultsText
-                    print(textResultsText)
                 } else {
                     self.textResults.text = "No texts found"
                 }
