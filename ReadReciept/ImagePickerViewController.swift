@@ -13,7 +13,6 @@ import Alamofire
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     let imagePicker = UIImagePickerController()
 
-    @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var spinner: UIActivityIndicatorView!
     @IBOutlet weak var textResults: UITextView!
 
@@ -53,7 +52,6 @@ extension ViewController {
         DispatchQueue.main.async(execute: {
 
             self.spinner.stopAnimating()
-            self.imageView.isHidden = true
             self.textResults.isHidden = false
 
             // Check for errors
@@ -96,8 +94,6 @@ extension ViewController {
 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         if let pickedImage = info[.originalImage] as? UIImage {
-            imageView.contentMode = .scaleAspectFit
-            imageView.isHidden = true // You could optionally display the image here by setting imageView.image = pickedImage
             spinner.startAnimating()
             textResults.isHidden = true
 
