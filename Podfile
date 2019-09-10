@@ -7,6 +7,7 @@ target 'ReadReciept' do
 
   # Pods for ReadReciept
   pod 'SwiftyJSON'
+  pod 'Alamofire'
 
   target 'ReadRecieptTests' do
     inherit! :search_paths

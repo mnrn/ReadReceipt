@@ -8,10 +8,10 @@
 
 import UIKit
 import SwiftyJSON
+import Alamofire
 
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     let imagePicker = UIImagePickerController()
-    let session = URLSession.shared
 
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var spinner: UIActivityIndicatorView!
@@ -26,7 +26,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     @IBAction func loadImageButtonTapped(_ sender: UIButton) {
         imagePicker.allowsEditing = false
         imagePicker.sourceType = .photoLibrary
-
         present(imagePicker, animated: true, completion: nil)
     }
 
@@ -141,15 +140,14 @@ extension ViewController {
     }
 
     func createRequest(with imageBase64: String) {
-        // Create our request URL
-
-        var request = URLRequest(url: googleURL)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.addValue(Bundle.main.bundleIdentifier ?? "", forHTTPHeaderField: "X-Ios-Bundle-Identifier")
+        // Create our request headers
+        let headers: HTTPHeaders = [
+            "Content-Type": "application/json",
+            "X-Ios-Bundle-Identifier": Bundle.main.bundleIdentifier ?? ""
+        ]
 
         // Build our API request
-        let jsonRequest = [
+        let parameters: [String: Any] = [
             "requests": [
                 "image": [
                     "content": imageBase64
@@ -163,30 +161,14 @@ extension ViewController {
             ]
         ]
 
-        // Serialize the JSON
-        let jsonObject = JSON(jsonRequest)
-        guard let data = try? jsonObject.rawData() else {
-            return
-        }
-
-        request.httpBody = data
-
         // Run the request on a background thread
-        DispatchQueue.global().async { self.runRequestOnBackgroundThread(request) }
-    }
-
-    func runRequestOnBackgroundThread(_ request: URLRequest) {
-        // run the request
-
-        let task: URLSessionDataTask = session.dataTask(with: request) { (data, _, error) in
-            guard let data = data, error == nil else {
-                print(error?.localizedDescription ?? "")
-                return
+        DispatchQueue.global().async {
+            Alamofire.request(self.googleURL, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers).responseJSON { response in
+                guard let data = response.data else {
+                    return
+                }
+                self.analyzeResults(data)
             }
-
-            self.analyzeResults(data)
         }
-
-        task.resume()
     }
 }
