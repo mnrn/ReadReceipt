@@ -7,38 +7,79 @@
 //
 
 import UIKit
+import AVFoundation
 import SwiftyJSON
 import Alamofire
 
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    let imagePicker = UIImagePickerController()
 
-    @IBOutlet weak var spinner: UIActivityIndicatorView!
-    @IBOutlet weak var textResults: UITextView!
-
+    var captureSession = AVCaptureSession()
+    var mainCamera: AVCaptureDevice?
+    var innerCamera: AVCaptureDevice?
+    var currentDevice: AVCaptureDevice?
+    var photoOutput: AVCapturePhotoOutput?
+    var cameraPreviewLayer: AVCaptureVideoPreviewLayer?
     var googleURL: URL {
         let env = ProcessInfo.processInfo.environment
         let googleAPIKey = env["GOOGLE_API_KEY"]!
         return URL(string: "https://vision.googleapis.com/v1/images:annotate?key=\(googleAPIKey)")!
     }
 
-    @IBAction func loadImageButtonTapped(_ sender: UIButton) {
-        imagePicker.allowsEditing = false
-        imagePicker.sourceType = .photoLibrary
-        present(imagePicker, animated: true, completion: nil)
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        imagePicker.delegate = self
-        textResults.isHidden = true
-        spinner.hidesWhenStopped = true
+        setupCaptureSession()
+        setupDevice()
+        setupInputOutput()
+        setupPreviewLayer()
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+}
+
+/// Camera configures
+
+extension ViewController {
+    func setupCaptureSession() {
+        captureSession.sessionPreset = AVCaptureSession.Preset.photo
+    }
+
+    func setupDevice() {
+        let deviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .unspecified)
+        let devices = deviceDiscoverySession.devices
+        for device in devices {
+            if device.position == .back {
+                mainCamera = device
+            } else if device.position == .front {
+                innerCamera = device
+            }
+        }
+        currentDevice = mainCamera
+    }
+
+    func setupInputOutput() {
+        do {
+            let captureDeviceInput = try AVCaptureDeviceInput(device: currentDevice!)
+            captureSession.addInput(captureDeviceInput)
+            let photoOutput = AVCapturePhotoOutput()
+            photoOutput.setPreparedPhotoSettingsArray([AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.jpeg])], completionHandler: nil)
+            captureSession.addOutput(photoOutput)
+            self.photoOutput = photoOutput
+        } catch {
+            print(error)
+        }
+    }
+
+    func setupPreviewLayer() {
+        let cameraPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+        cameraPreviewLayer.videoGravity = .resizeAspectFill
+        cameraPreviewLayer.connection?.videoOrientation = .portrait
+        cameraPreviewLayer.frame = view.frame
+        self.cameraPreviewLayer = cameraPreviewLayer
+        view.layer.insertSublayer(self.cameraPreviewLayer!, at: 0)
     }
 }
 
@@ -50,9 +91,6 @@ extension ViewController {
 
         // Update UI on the main thread
         DispatchQueue.main.async(execute: {
-
-            self.spinner.stopAnimating()
-            self.textResults.isHidden = false
 
             // Check for errors
             do {
@@ -81,12 +119,10 @@ extension ViewController {
                             textResultsText += "\(text)"
                         }
                     }
-                    self.textResults.text = textResultsText
                 } else {
-                    self.textResults.text = "No texts found"
                 }
-            } catch let error {
-                self.textResults.text = "Error \(error)"
+            } catch {
+
             }
         })
 
@@ -94,8 +130,6 @@ extension ViewController {
 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         if let pickedImage = info[.originalImage] as? UIImage {
-            spinner.startAnimating()
-            textResults.isHidden = true
 
             // Base64 encode the image and create the request
             let binaryImageData = base64EncodeImage(pickedImage)
@@ -117,11 +151,7 @@ extension ViewController {
         UIGraphicsEndImageContext()
         return resizedImage!
     }
-}
 
-/// Networking
-
-extension ViewController {
     func base64EncodeImage(_ image: UIImage) -> String {
         var imagedata = image.pngData()
 
@@ -134,7 +164,11 @@ extension ViewController {
 
         return imagedata!.base64EncodedString(options: .endLineWithCarriageReturn)
     }
+}
 
+/// Networking
+
+extension ViewController {
     func createRequest(with imageBase64: String) {
         // Create our request headers
         let headers: HTTPHeaders = [
