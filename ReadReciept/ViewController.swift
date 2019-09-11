@@ -24,6 +24,14 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let googleAPIKey = env["GOOGLE_API_KEY"]!
         return URL(string: "https://vision.googleapis.com/v1/images:annotate?key=\(googleAPIKey)")!
     }
+    @IBOutlet weak var cameraButton: UIButton!
+
+    @IBAction func cameraButtonTouchUpInside(_ sender: Any) {
+        let settings = AVCapturePhotoSettings()
+        settings.flashMode = .auto
+        settings.isAutoStillImageStabilizationEnabled = true
+        photoOutput?.capturePhoto(with: settings, delegate: self as AVCapturePhotoCaptureDelegate)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,11 +40,26 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         setupDevice()
         setupInputOutput()
         setupPreviewLayer()
+        captureSession.startRunning()
+        setupCameraButtonStyle()
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+}
+
+/// AVCapturePhotoCaptureDelegate
+
+extension ViewController: AVCapturePhotoCaptureDelegate {
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        if let imageData = photo.fileDataRepresentation() {
+            let uiImage = UIImage(data: imageData)
+            // Base64 encode the image and create the request
+            let binaryImageData = base64EncodeImage(uiImage!)
+            createRequest(with: binaryImageData)
+        }
     }
 }
 
@@ -81,68 +104,18 @@ extension ViewController {
         self.cameraPreviewLayer = cameraPreviewLayer
         view.layer.insertSublayer(self.cameraPreviewLayer!, at: 0)
     }
+
+    func setupCameraButtonStyle() {
+        cameraButton.layer.borderColor = UIColor.white.cgColor
+        cameraButton.layer.borderWidth = 5
+        cameraButton.clipsToBounds = true
+        cameraButton.layer.cornerRadius = min(cameraButton.frame.width, cameraButton.frame.height)
+    }
 }
 
 /// Image processing
 
 extension ViewController {
-
-    func analyzeResults(_ dataToParse: Data) {
-
-        // Update UI on the main thread
-        DispatchQueue.main.async(execute: {
-
-            // Check for errors
-            do {
-                // Use SwiftyJSON to parse results
-                let json = try JSON(data: dataToParse)
-
-                // Parse the response
-                print(json)
-                let responses: JSON = json["responses"][0]
-
-                // Get label annotations
-                let textAnnotations: JSON = responses["textAnnotations"]
-                let numTexts: Int = textAnnotations.count
-                var texts: [String] = []
-                if numTexts > 0 {
-                    var textResultsText: String = "Texts found: "
-                    for index in 0..<numTexts {
-                        let text = textAnnotations[index]["description"].stringValue
-                        texts.append(text)
-                    }
-                    for text in texts {
-                        // if it's not the last item add a comma
-                        if texts[texts.count - 1] != text {
-                            textResultsText += "\(text), "
-                        } else {
-                            textResultsText += "\(text)"
-                        }
-                    }
-                } else {
-                }
-            } catch {
-
-            }
-        })
-
-    }
-
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
-        if let pickedImage = info[.originalImage] as? UIImage {
-
-            // Base64 encode the image and create the request
-            let binaryImageData = base64EncodeImage(pickedImage)
-            createRequest(with: binaryImageData)
-        }
-
-        dismiss(animated: true, completion: nil)
-    }
-
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        dismiss(animated: true, completion: nil)
-    }
-
     func resizeImage(_ imageSize: CGSize, image: UIImage) -> Data {
         UIGraphicsBeginImageContext(imageSize)
         image.draw(in: CGRect(x: 0, y: 0, width: imageSize.width, height: imageSize.height))
@@ -202,5 +175,48 @@ extension ViewController {
                 }
             }
         }
+    }
+}
+
+/// Analyze response
+
+extension ViewController {
+    func analyzeResults(_ dataToParse: Data) {
+        // Update UI on the main thread
+        DispatchQueue.main.async(execute: {
+            // Check for errors
+            do {
+                // Use SwiftyJSON to parse results
+                let json = try JSON(data: dataToParse)
+
+                // Parse the response
+                let responses: JSON = json["responses"][0]
+
+                // Get label annotations
+                let textAnnotations: JSON = responses["textAnnotations"]
+                let numTexts: Int = textAnnotations.count
+                var texts: [String] = []
+                if numTexts > 0 {
+                    var textResultsText: String = "Texts found: "
+                    for index in 0..<numTexts {
+                        let text = textAnnotations[index]["description"].stringValue
+                        texts.append(text)
+                    }
+                    for text in texts {
+                        // if it's not the last item add a comma
+                        if texts[texts.count - 1] != text {
+                            textResultsText += "\(text), "
+                        } else {
+                            textResultsText += "\(text)"
+                        }
+                    }
+                    print(textResultsText)
+                } else {
+                    print("No texts detected.")
+                }
+            } catch {
+                print(error)
+            }
+        })
     }
 }
