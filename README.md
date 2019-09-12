@@ -1,5 +1,7 @@
 # ReadReciept
 
+## Overview
+
 Read receipt using Google Cloud Vision API.
 
 ## Development
