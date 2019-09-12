@@ -1,3 +1,6 @@
-line_length: 300
+line_length:
+  warning: 180
+  error: 300
+  ignores_comments: true
 excluded:
   - Pods
