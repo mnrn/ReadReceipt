@@ -116,27 +116,22 @@ extension ViewController {
         // Build our API request
         let parameters: [String: Any] = [
             "requests": [
-                "image": [
-                    "content": imageBase64
-                ],
-                "features": [
-                    [
-                        "type": "TEXT_DETECTION",
-                        "maxResults": 1
-                    ]
-                ]
+                "image": ["content": imageBase64],
+                "features": [["type": "TEXT_DETECTION", "maxResults": 1]]
             ]
         ]
 
         // Run the request on a background thread
         DispatchQueue.global().async {
-            Alamofire.request(self.googleURL, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers).responseJSON { response in
-                switch response.result {
-                case .success:
-                    self.analyzeResults(response.data!)
-                case let .failure(error):
-                    print(error)
-                }
+            Alamofire.request(self.googleURL, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+                .responseJSON { response in
+                    switch response.result {
+                    case .success:
+                        guard let data = response.data else { return }
+                        self.analyzeResults(data)
+                    case let .failure(error):
+                        print(error)
+                    }
             }
         }
     }
@@ -160,24 +155,20 @@ extension ViewController {
                 let textAnnotations: JSON = responses["textAnnotations"]
                 let numTexts: Int = textAnnotations.count
                 var texts: [String] = []
-                if numTexts > 0 {
-                    var textResultsText: String = "Texts found: "
-                    for index in 0 ..< numTexts {
-                        let text = textAnnotations[index]["description"].stringValue
-                        texts.append(text)
-                    }
-                    for text in texts {
-                        // if it's not the last item add a comma
-                        if texts[texts.count - 1] != text {
-                            textResultsText += "\(text), "
-                        } else {
-                            textResultsText += "\(text)"
-                        }
-                    }
-                    print(textResultsText)
-                } else {
+                guard numTexts > 0 else {
                     print("No texts detected.")
+                    return
                 }
+                var textResultsText: String = "Texts found: "
+                for index in 0 ..< numTexts {
+                    let text = textAnnotations[index]["description"].stringValue
+                    texts.append(text)
+                }
+                for text in texts {
+                    // if it's not the last item add a comma
+                    textResultsText += texts[texts.count - 1] != text ? "\(text), " : "\(text)"
+                }
+                print(textResultsText)
             } catch {
                 print(error)
             }
