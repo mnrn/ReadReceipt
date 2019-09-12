@@ -13,7 +13,7 @@ Read receipt using Google Cloud Vision API.
   
 ### Linting
 
-- Configure [SwiftLint](https://github.com/realm/SwiftLint) by .swiftlint.yml file.
+- Configure [SwiftLint](https://github.com/realm/SwiftLint) by `.swiftlint.yml` file.
 - Run `swiftlint autocorrect` on build in Xcode.
 
 ### Requirements
