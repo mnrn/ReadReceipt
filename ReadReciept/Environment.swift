@@ -2,8 +2,8 @@
 //  Environment.swift
 //  ReadReciept
 //
-//  Created by n on 2019/09/12.
-//  Copyright © 2019 n. All rights reserved.
+//  Created by mnrn on 2019/09/12.
+//  Copyright © 2019 mnrn. All rights reserved.
 //
 
 import Foundation
