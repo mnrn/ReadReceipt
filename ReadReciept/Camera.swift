@@ -6,8 +6,8 @@
 //  Copyright © 2019 n. All rights reserved.
 //
 
-import UIKit
 import AVFoundation
+import UIKit
 
 class Camera {
     let photoOutput = AVCapturePhotoOutput()
@@ -15,7 +15,7 @@ class Camera {
     func findDevice(position: AVCaptureDevice.Position) -> AVCaptureDevice? {
         let deviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .unspecified)
         let devices = deviceDiscoverySession.devices
-        return devices.first(where: { $0.position == position})
+        return devices.first(where: { $0.position == position })
     }
 
     func createPreviewLayer(session: AVCaptureSession, device: AVCaptureDevice) throws -> AVCaptureVideoPreviewLayer {

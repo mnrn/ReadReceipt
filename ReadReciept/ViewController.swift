@@ -6,13 +6,12 @@
 //  Copyright © 2019 mnrn. All rights reserved.
 //
 
-import UIKit
+import Alamofire
 import AVFoundation
 import SwiftyJSON
-import Alamofire
+import UIKit
 
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-
     // MARK: - Properties
 
     let camera = Camera()
@@ -21,11 +20,11 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let googleAPIKey = env["GOOGLE_API_KEY"]!
         return URL(string: "https://vision.googleapis.com/v1/images:annotate?key=\(googleAPIKey)")!
     }
-    @IBOutlet weak var cameraButton: UIButton!
+    @IBOutlet var cameraButton: UIButton!
 
     // MARK: - Actions
 
-    @IBAction func cameraButtonTouchUpInside(_ sender: Any) {
+    @IBAction func cameraButtonTouchUpInside(_: Any) {
         let settings = AVCapturePhotoSettings()
         settings.flashMode = .auto
         settings.isAutoStillImageStabilizationEnabled = true
@@ -38,9 +37,10 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         do {
+            setupLineLayer()
             let session = try createCameraLayer()
             session.startRunning()
-            setupCameraButtonStyle()
+            try setupCameraButtonStyle()
         } catch {
             print(error)
         }
@@ -64,18 +64,35 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         return session
     }
 
-    private func setupCameraButtonStyle() {
-        cameraButton.layer.borderColor = UIColor.white.cgColor
-        cameraButton.layer.borderWidth = 5
-        cameraButton.clipsToBounds = true
-        cameraButton.layer.cornerRadius = min(cameraButton.frame.width, cameraButton.frame.height)
+    private func setupCameraButtonStyle() throws {
+        cameraButton.frame = CGRect(x: 0, y: 0, width: 100, height: 75)
+        cameraButton.layer.position = CGPoint(x: view.frame.width / 2, y: view.frame.height - 50)
+        view.layer.addSublayer(cameraButton.layer)
+        if let path = Bundle.main.path(forResource: "kaden_camera_compact", ofType: "png") {
+            let image = UIImage(contentsOfFile: path)
+            cameraButton.setImage(image, for: .normal)
+        } else {
+            fatalError("image not found")
+        }
+    }
+
+    private func setupLineLayer() {
+        let linePath = UIBezierPath()
+        linePath.move(to: CGPoint(x: 0, y: view.frame.height - 50))
+        linePath.addLine(to: CGPoint(x: view.frame.width, y: view.frame.height - 50))
+        let lineLayer = CAShapeLayer()
+        lineLayer.path = linePath.cgPath
+        lineLayer.strokeColor = UIColor(red: 0.32, green: 0.32, blue: 0.32, alpha: 0.8).cgColor
+        lineLayer.lineWidth = 100
+        view.layer.addSublayer(lineLayer)
     }
 }
 
 // MARK: - AVCapturePhotoCaptureDelegate
 
 extension ViewController: AVCapturePhotoCaptureDelegate {
-    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+
+    func photoOutput(_: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error _: Error?) {
         if let imageData = photo.fileDataRepresentation() {
             let uiImage = UIImage(data: imageData)
             // Base64 encode the image and create the request
@@ -88,6 +105,7 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
 // MARK: - Networking
 
 extension ViewController {
+
     func createRequest(with imageBase64: String) {
         // Create our request headers
         let headers: HTTPHeaders = [
@@ -129,7 +147,7 @@ extension ViewController {
 extension ViewController {
     func analyzeResults(_ dataToParse: Data) {
         // Update UI on the main thread
-        DispatchQueue.main.async(execute: {
+        DispatchQueue.main.async {
             // Check for errors
             do {
                 // Use SwiftyJSON to parse results
@@ -144,7 +162,7 @@ extension ViewController {
                 var texts: [String] = []
                 if numTexts > 0 {
                     var textResultsText: String = "Texts found: "
-                    for index in 0..<numTexts {
+                    for index in 0 ..< numTexts {
                         let text = textAnnotations[index]["description"].stringValue
                         texts.append(text)
                     }
@@ -163,6 +181,6 @@ extension ViewController {
             } catch {
                 print(error)
             }
-        })
+        }
     }
 }

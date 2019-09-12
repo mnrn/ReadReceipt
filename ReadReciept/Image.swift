@@ -21,7 +21,7 @@ func base64EncodeImage(_ image: UIImage) -> String {
     var imagedata = image.pngData()
 
     // Resize the image if it exceeds the 2MB API limit
-    if imagedata?.count ?? 0 > 2097152 {
+    if imagedata?.count ?? 0 > 2_097_152 {
         let oldSize: CGSize = image.size
         let newSize: CGSize = CGSize(width: 800, height: oldSize.height / oldSize.width * 800)
         imagedata = resizeImage(newSize, image: image)
