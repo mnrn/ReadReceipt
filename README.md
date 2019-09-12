@@ -9,7 +9,7 @@ Read receipt using Google Cloud Vision API.
 ### Formatting
 
 - **Use 2 spaces to indent lines.**
-  - This is the same as **Google Swift Style Guide** and **Airbnb's Swift Style Guide.**
+  - This is the same as [Google Swift Style Guide](https://google.github.io/swift/) and [Airbnb's Swift Style Guide](https://github.com/airbnb/swift).
 
 ### Requirements
 
