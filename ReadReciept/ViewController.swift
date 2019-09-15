@@ -10,11 +10,13 @@ import Alamofire
 import AVFoundation
 import SwiftyJSON
 import UIKit
+import Firebase
 
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
   // MARK: - Properties
 
   let camera = Camera()
+  let ref = Database.database().reference()
   var googleURL: URL {
     let env = ProcessInfo.processInfo.environment
     let googleAPIKey = env["GOOGLE_API_KEY"]!
@@ -140,37 +142,15 @@ extension ViewController {
 
 extension ViewController {
   func analyzeResults(_ dataToParse: Data) {
-    // Update UI on the main thread
-    DispatchQueue.main.async {
-      // Check for errors
-      do {
-        // Use SwiftyJSON to parse results
-        let json = try JSON(data: dataToParse)
 
-        // Parse the response
-        let responses: JSON = json["responses"][0]
-
-        // Get label annotations
-        let textAnnotations: JSON = responses["textAnnotations"]
-        let numTexts: Int = textAnnotations.count
-        var texts: [String] = []
-        guard numTexts > 0 else {
-          print("No texts detected.")
-          return
-        }
-        var textResultsText: String = "Texts found: "
-        for index in 0 ..< numTexts {
-          let text = textAnnotations[index]["description"].stringValue
-          texts.append(text)
-        }
-        for text in texts {
-          // if it's not the last item add a comma
-          textResultsText += texts[texts.count - 1] != text ? "\(text), " : "\(text)"
-        }
-        print(textResultsText)
-      } catch {
-        print(error)
-      }
+    // Use SwiftyJSON to parse results
+    guard let json = try? JSON(data: dataToParse) else {
+      return
     }
+
+    print(json)
+
+    // Update UI on the main thread
+    DispatchQueue.main.async {}
   }
 }

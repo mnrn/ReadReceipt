@@ -30,7 +30,7 @@ class ReadRecieptUITests: XCTestCase {
     func testExample() {
         // Use recording to get started writing UI tests.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
-        XCTContext.runActivity(named: "") { _ in
+        XCTContext.runActivity(named: "Test Layout") { _ in
 
         }
     }
