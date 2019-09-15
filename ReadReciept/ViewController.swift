@@ -16,7 +16,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
   // MARK: - Properties
 
   let camera = Camera()
-  let ref = Database.database().reference()
   var googleURL: URL {
     let env = ProcessInfo.processInfo.environment
     let googleAPIKey = env["GOOGLE_API_KEY"]!
@@ -152,5 +151,14 @@ extension ViewController {
 
     // Update UI on the main thread
     DispatchQueue.main.async {}
+
+    // Send analyzed data to Firebase database.
+    if let data = json.dictionaryObject {
+      Database.database()
+        .reference()
+        .child("read-reciept")
+        .childByAutoId()
+        .setValue(data)
+    }
   }
 }

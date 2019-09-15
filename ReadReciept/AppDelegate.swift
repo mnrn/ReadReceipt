@@ -15,6 +15,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
     // Override point for customization after application launch.
+    FirebaseApp.configure()
+
     guard let path = Bundle.main.path(forResource: ".env", ofType: nil) else {
       fatalError("Not found: '/path/to/.env'.\nPlease create .env file.")
     }
@@ -23,7 +25,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     } catch {
       fatalError(error.localizedDescription)
     }
-    FirebaseApp.configure()
     return true
   }
 
