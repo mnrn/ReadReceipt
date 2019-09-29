@@ -1,6 +1,6 @@
 //
 //  ImageUtil.swift
-//  ReadReciept
+//  ReadReceipt
 //
 //  Created by mnrn on 2019/09/12.
 //  Copyright © 2019 mnrn. All rights reserved.

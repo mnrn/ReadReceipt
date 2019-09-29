@@ -1,6 +1,6 @@
 //
 //  ViewController.swift
-//  ReadReciept
+//  ReadReceipt
 //
 //  Created by mnrn on 2019/09/06.
 //  Copyright © 2019 mnrn. All rights reserved.

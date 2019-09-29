@@ -1,6 +1,6 @@
 //
-//  ReadRecieptUITests.swift
-//  ReadRecieptUITests
+//  ReadReceiptUITests.swift
+//  ReadReceiptUITests
 //
 //  Created by n on 2019/09/06.
 //  Copyright © 2019 n. All rights reserved.
@@ -8,7 +8,7 @@
 
 import XCTest
 
-class ReadRecieptUITests: XCTestCase {
+class ReadReceiptUITests: XCTestCase {
     let app = XCUIApplication()
 
     override func setUp() {

@@ -1,15 +1,15 @@
 //
-//  ReadRecieptTests.swift
-//  ReadRecieptTests
+//  ReadReceiptTests.swift
+//  ReadReceiptTests
 //
 //  Created by n on 2019/09/06.
 //  Copyright © 2019 n. All rights reserved.
 //
 
 import XCTest
-@testable import ReadReciept
+@testable import ReadReceipt
 
-class ReadRecieptTests: XCTestCase {
+class ReadReceiptTests: XCTestCase {
 
     override func setUp() {
         // Put setup code here. This method is called before the invocation of each test method in the class.
